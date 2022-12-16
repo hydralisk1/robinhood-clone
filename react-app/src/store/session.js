@@ -88,7 +88,7 @@ export const logout = () => async (dispatch) => {
 };
 
 
-export const signUp = (firstName, lastName, email, password, buyingPower) => async (dispatch) => {
+export const signUp = (firstName, lastName, email, password, buyingPower, username) => async (dispatch) => {
   const response = await fetch('/api/auth/signup', {
     method: 'POST',
     headers: {
@@ -99,7 +99,8 @@ export const signUp = (firstName, lastName, email, password, buyingPower) => asy
       last_name: lastName,
       email,
       password,
-      buying_power: buyingPower
+      buying_power: buyingPower,
+      username
     }),
   });
 
@@ -127,7 +128,11 @@ export const uploadProfileImage = (file) => async dispatch => {
   }
 
   const result = fetch(`/api/file/upload`, options)
-    .then(res => res.json())
+    .then(res => {
+      if(res.ok)
+        return res.json()
+      else throw Error('couldn\'t upload profile image')
+    })
     .then(res => {
       dispatch(setProfileImage(res.file))
       return true
@@ -160,11 +165,13 @@ export const updateNicknameUsername = (nickname, username) => async dispatch => 
     }
 
     const response = await fetch('/api/users/update', options)
-    if(response.ok)
+    if(response.ok){
       dispatch(updateNames(nickname, username))
-    return
+      return true
+    }else
+      throw Error('Something went wrong')
   }catch(e){
-    return e
+    return false
   }
 }
 

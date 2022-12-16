@@ -41,16 +41,15 @@ export function addStock(stock) {
     }
 }
 
-export function deleteStock(stockId) {
+export function deleteStock(info) {
     return {
         type: REMOVE_STOCK,
-        stockId
+        info
     }
 }
 
 export const fetchUserWatchlists = () => async dispatch => {
-    const response = await fetch(`api/watchlists/current`); 
-    console.log('im runnign line 53')
+    const response = await fetch(`/api/watchlists/current`); 
     if (response.ok) {
         const data = await response.json();
         dispatch(loadWatchlists(data.watchlists)); 
@@ -138,6 +137,7 @@ export const deleteWatchlist = (watchlistId) => async dispatch => {
 
 export const addStockToWatchlist = (info) => async dispatch => {
     const { watchlistId, symbol } = info;
+    
     try {
         const response = await fetch(`/api/watchlists/${watchlistId}/stocks`, {
             method: 'POST',
@@ -150,10 +150,8 @@ export const addStockToWatchlist = (info) => async dispatch => {
         if (response.ok) {
             const data = await response.json();
             dispatch(fetchUserWatchlists());
-            console.log('response is running')
             return response;
         } else {
-            console.log('something wrongggggg')
             const data = await response.json();
             if (data) {
                 throw data.error.message;
@@ -165,8 +163,26 @@ export const addStockToWatchlist = (info) => async dispatch => {
 }
 
 export const deleteStockFromWatchlist = (stock) => async dispatch => {
+    const { watchlistId, stockId } = stock;
     try {
+        const response = await fetch(`/api/watchlists/stocks/${stockId}`, {
+            method: 'DELETE', 
+            headers: {
+                'Content-Type': 'application/json'
+            }, 
+            body: JSON.stringify({stockId})
+        });
 
+        if (response.ok) {
+            const data = response.json();
+            dispatch(deleteStock({watchlistId, stockId }));
+            return response;
+        } else {
+            const data = await response.json();
+            if (data) {
+                throw data.error.message;
+            }
+        }
     } catch (err) {
         throw err;
     }
@@ -188,23 +204,45 @@ const watchlistReducer = (state = {}, action) => {
                     ),
             };
         case ADD_WATCHLIST:
-            newState = { ...state };
+            newState = deepCopy(state);
             newState.watchlists[action.watchlist.id] = action.watchlist;
             return newState;
         
         case EDIT_WATCHLIST:
-            newState = { ...state };
+            newState = deepCopy(state);
             const watchlist = action.watchlist;
             newState.watchlists[watchlist.id] = watchlist;
             return newState;
         
         case REMOVE_WATCHLIST:
-            newState = { ...state };
+            newState = deepCopy(state);
             delete newState.watchlists[action.watchlistId];
             return newState;
         
-        default: 
+        case REMOVE_STOCK:
+            newState = deepCopy(state);
+            let { watchlistId, stockId } = action.info;
+            let stocklists = newState.watchlists[watchlistId].watchlist_stocks.filter(stock => stock.id !== stockId);
+            newState.watchlists[watchlistId].watchlist_stocks = stocklists;
+            return newState;
+        default:
             return state
+    }
+}
+
+function deepCopy(value) {
+    if (typeof value === 'object') {
+        if (Array.isArray(value)) {
+            return value.map(element => deepCopy(element));
+        } else {
+            const result = {};
+            Object.entries(value).forEach(entry => {
+                result[entry[0]] = deepCopy(entry[1]);
+            });
+            return result;
+        }
+    } else {
+        return value;
     }
 }
 

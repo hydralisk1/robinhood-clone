@@ -1,16 +1,20 @@
 #transactions-outer-container {
     height: 100%;
-    width: 100%;
     position: relative;
+}
+
+#transactions-and-watchlist-container {
+    position: sticky;
+    top: 9.5rem;
 }
 
 #transaction-container {
     border: 1px solid var(--rockethood-border-lightgray);
     border-radius: 4px;
-    position: sticky;
     top: 9.5rem;
     background-color: white;
     box-shadow: rgba(0, 0, 0, 0.02) 0px -12px 24px 0px, rgba(0, 0, 0, 0.06) 0px 12px 24px 0px;
+    overflow: hidden;
 }
 
 #transaction-heading-container {
@@ -53,13 +57,118 @@
     align-items: center;
 }
 
-#transaction-amount{
+.transaction-shares-or-dollars-outer-container {
+    position: relative;
+    width: 50%;
+    border-radius: .4rem;
+    background-color: white;
+    height: 100%;
+}
+
+.transaction-shares-or-dollars-outer-container:hover:focus-within {
+    box-shadow: 0 10px 1px rgba(0, 0, 0, .01), 0 3px 24px rgba(48, 51, 51, .09)
+}
+
+#transaction-shares-or-dollars-display {
+    font-weight: normal;
+    min-width: 100%;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--rockethood-border-lightgray);
+    border-radius: .4rem;
+    height: 3.6rem;
+    cursor: pointer;
+    padding: 0 1.2rem;
+    background-color: white;
+}
+
+
+.transaction-shares-or-dollars-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 93%;
+    background-color: white;
+    width: 100%;
+    border: solid 1px var(--rockethood-border-lightgray);
+    border-radius: 0 0 .4rem .4rem;
+    overflow: hidden;
+}
+
+.transaction-shares-or-dollars-container button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-weight: normal;
+    min-width: 100%;
+    padding: 0;
+    border: 0;
+    height: 3.6rem;
+}
+
+.transaction-shares-or-dollars-container button.transaction-not-active:hover {
+    width: 100%;
+    border-radius: 0;
+    background-color: var(--rockethood-border-lightgray);
+}
+
+.transaction-show-shares-or-dollars-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.transaction-green {
+    color: white;
+    font-weight: normal;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 100%;
+    padding: 0 1.2rem;
+    border-radius: 0;
+    border: 1px solid var(--rockethood-border-lightgray);
+    border: none;
+    background-color: var(--rockethood-green);
+}
+
+.transaction-red {
+    color: white;
+    font-weight: normal;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 100%;
+    padding: 0 1.2rem;
+    border-radius: 0;
+    border: 1px solid var(--rockethood-border-lightgray);
+    background-color: var(--rockethood-sell-red);
+}
+
+
+#transaction-form-text-input {
+    text-align: right;
+    width: 50%;
+    height: 3.6rem;
+    border: 1px solid var(--rockethood-border-lightgray);
+    border-radius: .4rem;
+    font-size: 1.3rem;
+    padding-right: 1.2rem
+}
+
+#transaction-amount {
     border-bottom: 1px solid var(--rockethood-border-lightgray)
 }
 
-#transaction-amount:-ms-expand{
+#transaction-amount:-ms-expand {
     display: none;
 }
+
 #transaction-est-quantity {
     font-weight: 600;
 }
@@ -94,11 +203,10 @@
 }
 
 #transaction-submit-button {
-    margin: none;
-    padding: none;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    text-align: center;
     width: 100%;
 }
 

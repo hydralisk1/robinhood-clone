@@ -9,6 +9,7 @@ import { Modal } from "../Modals/Modal";
 // import UpdateWatchlistForm from "./Update/watchlist_updateForm";
 // import UpdateWatchlistForm from "./Update/watchlist_updateForm";
 import { Link } from 'react-router-dom';
+import RemoveStockBtn from './Delete/RemoveStock.js';
 import './index.css';
 
 const WatchList = () => {
@@ -67,7 +68,7 @@ const WatchList = () => {
             <div>
                 {watchlists && watchlists.map(
                     (watchlist, i) => (
-                        <div className='watchlist-content'>
+                        <div className='watchlist-content' key={watchlist.id}>
                             <div className='watchlist-content-header' onClick={handleClickBtn(i)}>
                                 <div className='watchlist-wrapper-head'>
                                     <div className='watchlist-icon'>
@@ -93,9 +94,12 @@ const WatchList = () => {
                                 <div className='watchlist-stocks-container'>
                                     {watchlist.watchlist_stocks.length > 0 &&
                                         watchlist.watchlist_stocks.map(stock => (
-                                            <Link to={`/stocks/${stock.stock_symbol}`}>
-                                                <SmallChart symbol={stock.stock_symbol} />
-                                            </Link>
+                                            <div className='watchlist-minigraph'>
+                                                {/* <Link to={`/stocks/${stock.stock_symbol}`}> */}
+                                                    <SmallChart symbol={stock.stock_symbol} />
+                                                {/* </Link> */}
+                                                <RemoveStockBtn symbol={stock.stock_symbol} watchlist={watchlist} stockId={stock.id} />
+                                            </div>
                                         ))
                                     }
                                 </div>

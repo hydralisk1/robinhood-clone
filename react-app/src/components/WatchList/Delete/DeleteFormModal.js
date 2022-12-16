@@ -16,7 +16,10 @@ const DeleteModal = ({ watchlist, closeDropdown, openModal, closeModal }) => {
     });
 
     return (
-        <button onClick={onClick} className='btn-edit'>Delete</button>
+        <button onClick={onClick} className='btn-deleteform'>
+            <i className="fa-solid fa-ban"></i>
+            <span>Delete</span>
+        </button>
     );
 }
 
