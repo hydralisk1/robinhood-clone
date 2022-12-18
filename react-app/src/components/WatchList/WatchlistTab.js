@@ -21,39 +21,38 @@ const WatchlistTab = () => {
             [i]: !isOpen[i]
         })
     }
-    console.log('rerendering');
 
     return (
         <div className="profile-page-watchlists-container">
             {watchlists && Object.values(watchlists).map(
                 (watchlist,i) => (
-                    <div className="profile-page-watchlists-label">
+                    <div className="profile-page-watchlists-label" key={watchlist.id}>
                         <button onClick={handleClick(i)} className="profile-page-watchlists-btnname">
                             <span>{watchlist.name}</span>
                         </button>
                         {isOpen[i] &&
                             <div className="profile-page-watchlists-stocks">
                                 <div className="profile-page-watchlists-stocks-table">
+                                    { watchlist.watchlist_stocks.length > 0 &&
+                                        <div className="profile-page-watchlists-stocks-table-head">
+                                            <div className="tab-table-label">Symbol</div>
+                                            <div className="tab-table-label">Price</div>
+                                            <div className='tab-table-label'>Today</div>
+                                            <div className="tab-table-label"></div>
+                                        </div>
+                                    }
                                     {watchlist.watchlist_stocks.length > 0 &&
                                         watchlist.watchlist_stocks.map(
                                             stock => (
-                                                <div>
-                                                    <div className="profile-page-watchlists-stocks-table-head">
-                                                        <div>Symbol</div>
-                                                        <div>Price</div>
-                                                        <div>Delete</div>
-                                                    </div>
-                                                    <div className="profile-page-watchlists-stocks-content">
-                                                    
-                                                        <Link to={`/stocks/${stock.stock_symbol}`}>
-                                                            <div>{stock.stock_symbol}</div>
-                                                        </Link>
-                                                        <div>
-                                                            <StockPrice symbol={stock.stock_symbol}/>
-                                                        </div>
-                                                        <div>
-                                                            <RemoveStockBtn watchlist={watchlist} stockId={stock.id} />
-                                                        </div>
+                                                <div className="profile-page-watchlists-stocks-content" key={stock.id}>
+                                                    <Link to={`/stocks/${stock.stock_symbol}`} className="tab-table-content tab-link">
+                                                        <div>{stock.stock_symbol}</div>
+                                                    </Link>
+                                                    <>
+                                                        <StockPrice symbol={stock.stock_symbol}/>
+                                                    </>
+                                                    <div className="tab-remove">
+                                                        <RemoveStockBtn watchlist={watchlist} stockId={stock.id} />
                                                     </div>
                                                 </div>
                                             )

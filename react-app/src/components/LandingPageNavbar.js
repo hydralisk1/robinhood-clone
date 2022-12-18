@@ -11,6 +11,7 @@ const LandingPageNavbar = () => {
         return <Redirect to='/app' />;
     }
 
+    if (current_url === "/")   document.querySelector('meta[name="theme-color"]').setAttribute('content', `#002615`);
     return (
         <div className="landing-page-container">
             <div className={`landing-page ${current_url === "/" ? "landing-page-green" : "landing-page-white"}`}>
@@ -33,6 +34,9 @@ const LandingPageNavbar = () => {
                         </NavLink>
                         <NavLink to="/snacks">
                             <li className="landing-page-navlink" id="landing-page-Snacks-button">Snacks</li>
+                        </NavLink>
+                        <NavLink to="/cashcard">
+                            <li className="landing-page-navlink" id="landing-page-CashCard-button">CashCard</li>
                         </NavLink>
                     </ul>
                     <div className="landing-page-actions">

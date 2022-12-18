@@ -42,12 +42,11 @@ function StockShowcase() {
         fetch(`/api/stock/company-information/${symbol}`)
             .then(res => res.json())
             .then(res => {
+                if (res.error) return ({ company: "" });
                 setCompanyInfo(res);
                 setCompanyInfoLoaded(true);
             });
     }, [symbol]);
-
-    console.log(companyInfo);
     return (
         <>
             <AppMainNavBar />

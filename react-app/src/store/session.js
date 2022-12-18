@@ -1,9 +1,10 @@
 // constants
 const SET_USER = 'session/SET_USER';
 const REMOVE_USER = 'session/REMOVE_USER';
-const SET_PROFILE_IMAGE = 'session/SET_PROFILE_IMAGE'
-const REMOVE_PROFILE_IMAGE = 'session/REMOVE_PROFILE_IMAGE'
-const UPDATE_NICKNAME_AND_USERNAME = 'session/UPDATE_NICKNAME_ANDUSERNAME'
+const SET_PROFILE_IMAGE = 'session/SET_PROFILE_IMAGE';
+const REMOVE_PROFILE_IMAGE = 'session/REMOVE_PROFILE_IMAGE';
+const UPDATE_NICKNAME_AND_USERNAME = 'session/UPDATE_NICKNAME_ANDUSERNAME';
+const UPDATE_BUYING_POWER = "session/update_buying_power";
 
 const setUser = (user) => ({
   type: SET_USER,
@@ -17,19 +18,26 @@ const removeUser = () => ({
 const setProfileImage = imageUrl => ({
   type: SET_PROFILE_IMAGE,
   imageUrl
-})
+});
 
 const removeProfileImage = () => ({
   type: REMOVE_PROFILE_IMAGE
-})
+});
 
 const updateNames = (nickname, username) => ({
   type: UPDATE_NICKNAME_AND_USERNAME,
   nickname,
   username
-})
+});
 
-const initialState = { user: null };
+const updateAccount = (updatedAccount) => ({
+  type: UPDATE_BUYING_POWER,
+  updatedAccount
+});
+
+const initialState = {
+  user: null
+};
 
 export const authenticate = () => async (dispatch) => {
   const response = await fetch('/api/auth/', {
@@ -119,85 +127,129 @@ export const signUp = (firstName, lastName, email, password, buyingPower, userna
 };
 
 export const uploadProfileImage = (file) => async dispatch => {
-  const formData = new FormData()
-  formData.append('file', file)
+  const formData = new FormData();
+  formData.append('file', file);
 
   const options = {
     method: 'POST',
     body: formData
-  }
+  };
 
   const result = fetch(`/api/file/upload`, options)
     .then(res => {
-      if(res.ok)
-        return res.json()
-      else throw Error('couldn\'t upload profile image')
+      if (res.ok)
+        return res.json();
+      else throw Error('couldn\'t upload profile image');
     })
     .then(res => {
-      dispatch(setProfileImage(res.file))
-      return true
+      dispatch(setProfileImage(res.file));
+      return true;
     })
     .catch(e => {
-      console.log(e)
-      return false
-    })
+      return false;
+    });
 
-    return result
-}
+  return result;
+};
 
 export const deleteProfileImage = () => async dispatch => {
-  try{
-    await fetch(`/api/file/upload`, {method: 'DELETE'})
-    dispatch(removeProfileImage())
-    return true
-  }catch(e) {
-    return false
+  try {
+    await fetch(`/api/file/upload`, { method: 'DELETE' });
+    dispatch(removeProfileImage());
+    return true;
+  } catch (e) {
+    return false;
   }
-}
+};
 
 export const updateNicknameUsername = (nickname, username) => async dispatch => {
   try {
-    const headers = {'Content-Type': 'application/json'}
+    const headers = { 'Content-Type': 'application/json' };
     const options = {
       method: 'PUT',
       headers,
-      body: JSON.stringify({nickname, username})
-    }
+      body: JSON.stringify({ nickname, username })
+    };
 
-    const response = await fetch('/api/users/update', options)
-    if(response.ok){
-      dispatch(updateNames(nickname, username))
-      return true
-    }else
-      throw Error('Something went wrong')
-  }catch(e){
-    return false
+    const response = await fetch('/api/users/update', options);
+    if (response.ok) {
+      dispatch(updateNames(nickname, username));
+      return true;
+    } else
+      throw Error('Something went wrong');
+  } catch (e) {
+    return false;
   }
-}
+};
+
+export const updateBuyingPowerWithDb = (symbol, name, transaction_type, quantity, price) => async dispatch => {
+  const response = await fetch("/api/users/transaction", {
+    method: "PUT",
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ symbol, name, transaction_type, quantity, price })
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    dispatch(updateAccount(data));
+    return data.buyingPower;
+  } else {
+    const data = await response.json();
+  }
+};
 
 export default function reducer(state = initialState, action) {
   switch (action.type) {
+    case UPDATE_BUYING_POWER: {
+      const newState = { ...state };
+      newState.user.assets = action.updatedAccount.assets;
+      newState.user.buyingPower = action.updatedAccount.buyingPower;
+      newState.user.totalStock = action.updatedAccount.totalStock;
+      return newState;
+    }
     case SET_USER:
       return { user: action.payload };
     case REMOVE_USER:
       return { user: null };
     case SET_PROFILE_IMAGE:
-      return { user: {
-        ...state.user,
-        imageUrl: action.imageUrl
-      }}
+      return {
+        user: {
+          ...state.user,
+          imageUrl: action.imageUrl
+        }
+      };
     case REMOVE_PROFILE_IMAGE:
-      return { user: {
-        ...state.user,
-        imageUrl: null
-      }}
+      return {
+        user: {
+          ...state.user,
+          imageUrl: null
+        }
+      };
     case UPDATE_NICKNAME_AND_USERNAME:
-      return { user: {
-        ...state.user,
-        nickname: action.nickname,
-        username: action.username
-      }}
+      return {
+        user: {
+          ...state.user,
+          nickname: action.nickname,
+          username: action.username
+        }
+      };
     default:
       return state;
+  }
+}
+
+function deepCopy(value) {
+  if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      return value.map(element => deepCopy(element));
+    } else {
+      const result = {};
+      Object.entries(value).forEach(entry => {
+        result[entry[0]] = deepCopy(entry[1]);
+      });
+      return result;
+    }
+  } else {
+    return value;
   }
 }

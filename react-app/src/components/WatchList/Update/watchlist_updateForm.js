@@ -14,7 +14,9 @@ const UpdateWatchlistForm = ({watchlist, onClose}) => {
         if (name.length > 64) {
             return setValidationError('List name must be less than 64 characters.');
         }
-        console.log('im line 14 handle submit')
+        if (name.trim() === "") {
+            return setValidationError('List name can not be blank.') 
+        }
         const response = await dispatch(watchlistAction.updateWatchlist({name, id}))
         .catch(async (err) => {
             setValidationError(err[0])
@@ -36,7 +38,7 @@ const UpdateWatchlistForm = ({watchlist, onClose}) => {
             <form onSubmit={handleSubmit}>
                 <div className='updateform-header'>
                     <div>Edit List</div>
-                    <button className='btn-close' onClick={handleClose}>
+                    <button type='button'className='btn-close' onClick={handleClose}>
                         <i className="fa-solid fa-xmark"></i>
                     </button>
                 </div>

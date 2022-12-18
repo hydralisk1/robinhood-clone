@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import LoginForm from './components/auth/LoginForm';
 import SignUpForm from './components/auth/SignUpForm';
 import NavBar from './components/NavBar';
@@ -9,18 +9,21 @@ import UsersList from './components/UsersList';
 import User from './components/User';
 import LandingPageNavbar from './components/LandingPageNavbar';
 import { authenticate } from './store/session';
-import ChartTest from './components/ChartTest';
+// import ChartTest from './components/ChartTest';
 import "./stylesheets/reset.css";
 import "./stylesheets/global.css";
 import WatchList from './components/WatchList';
 import AppHome from './components/AppHome';
 import StockShowcase from './components/StockShowcase';
 import ProfilePage from './components/ProfilePage.js';
-
+import LearnPage from './components/LandingPages/Learn';
+import LandingHome from './components/LandingPages/LandingHome';
+import CashCard from './components/CashCard';
 
 function App() {
   const [loaded, setLoaded] = useState(false);
   const dispatch = useDispatch();
+  const user = useSelector(state => state.session);
 
   useEffect(() => {
     (async () => {
@@ -28,6 +31,7 @@ function App() {
       setLoaded(true);
     })();
   }, [dispatch]);
+
 
   if (!loaded) {
     return null;
@@ -46,7 +50,7 @@ function App() {
         </Route>
         <Route path="/learn">
           <LandingPageNavbar />
-          learn
+          <LearnPage />
         </Route>
         <Route path="/snacks">
           <LandingPageNavbar />
@@ -64,19 +68,16 @@ function App() {
         <ProtectedRoute path='/users/:userId' exact={true} >
           <User />
         </ProtectedRoute>
-        <Route path='/charttest'>
+        {/* <Route path='/charttest'>
           <ChartTest />
-        </Route>
+        </Route> */}
         <Route path='/' exact={true} >
           <LandingPageNavbar />
-          <h1>My Home Page</h1>
+          <LandingHome/>
         </Route>
-        <Route path='/watchlists' exact={true} >
-          <WatchList />
-        </Route>
-        <Route path='/stocks/:symbol' >
+        <ProtectedRoute path='/stocks/:symbol' >
           <StockShowcase />
-        </Route>
+        </ProtectedRoute>
       </Switch>
       <ProtectedRoute path="/app" exact>
         <AppHome />
@@ -84,6 +85,10 @@ function App() {
       <ProtectedRoute path="/profile" exact>
         <ProfilePage />
       </ProtectedRoute>
+      <Route path="/cashcard">
+        <LandingPageNavbar />
+        <CashCard/>
+      </Route>
     </BrowserRouter>
   );
 }
