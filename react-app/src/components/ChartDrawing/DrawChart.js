@@ -24,7 +24,7 @@ const DrawChart = () => {
         fontWeight: 500
     }
     const dispatch = useDispatch()
-    let realtimeId
+    const [realtimeId, setRealtimeId] = useState(null)
 
     const setCategories = () => {
         const offsetEST = 18000000
