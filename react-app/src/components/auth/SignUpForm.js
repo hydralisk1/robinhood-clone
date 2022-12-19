@@ -41,6 +41,16 @@ const SignUpForm = () => {
   const usernameCheck = async (e) => {
     e.preventDefault();
 
+    if (username.length < 3 || username.length > 20) {
+      setUsernameError('Your username must be between 3 and 20 characters long.');
+      setShowUsernameError(true);
+      return;
+    } else if (/[^a-zA-Z\d\_]+/.test(username)) {
+      setUsernameError('Your username can only have letters, numbers, and underscores.');
+      setShowUsernameError(true);
+      return;
+    }
+
     setLoading(true);
     const success = await fetch(`/api/users/check-username/${username}`)
       .then(res => {
@@ -69,7 +79,7 @@ const SignUpForm = () => {
       errors.email = 'Please provide a valid Email';
     }
 
-    if (password.length > 0 === false) errors.password = "Please enter your password.";
+    if (password.length >= 10 === false) errors.password = "Password must be at least 10 characters long";
     if (repeatPassword.length > 0 === false) errors.repeatPassword = "Please retype your password.";
     else if (repeatPassword !== password) errors.repeatPassword = "Passwords must match!";
 
@@ -97,9 +107,10 @@ const SignUpForm = () => {
     e.preventDefault();
     if (bank.length > 0 === false) errors.bank = "Please enter your bank information.";
     if (!lastFour || lastFour < 0) errors.lastFour = "Please enter the last four of your bank account.";
+    else if (lastFour.toString().length < 4) errors.lastFour = "Please enter the last four of your bank account.";
     if (accountNickname.length > 0 === false) errors.accountNickname = "Please enter a nickname for your account.";
     if (!buyingPower || buyingPower <= 0) errors.buyingPower = "Please enter a number greater than 0";
-
+    else if (buyingPower > 10000000) errors.buyingPower = "Rockethood's current max limit is $10,000,000.00. Please deposit less money.";
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
       return;
@@ -249,7 +260,6 @@ const SignUpForm = () => {
                 name='repeat_password'
                 onChange={updateRepeatPassword}
                 value={repeatPassword}
-                required={true}
                 className={errors.repeatPassword ? "error-input" : null}
                 placeholder="Repeat Password"
               />
@@ -260,9 +270,6 @@ const SignUpForm = () => {
             <div id="signup-login-container">
               <p id="signup-already">Already have an account?</p>
               <Link to="/login"><p id="signup-login">Log in instead</p></Link>
-            </div>
-            <div className="signup-button">
-              {signupStage === 1 && <button className='signup-button-bottom' type='submit'>{loading ? spinner : "Next"}</button>}
             </div>
           </form>}
         {/* step 2 */}
@@ -281,9 +288,6 @@ const SignUpForm = () => {
             <p className='error-label'>
               {showUsernameError && usernameError}
             </p>
-            <div className="signup-button">
-              {signupStage === 2 && <button className='signup-button-bottom' type='submit'>{loading ? spinner : "Next"}</button>}
-            </div>
           </form>
         }
         {signupStage === 3 &&
@@ -338,9 +342,6 @@ const SignUpForm = () => {
                 {errors.buyingPower}
               </p>
             </div>
-            <div className="signup-button">
-              {signupStage === 3 && <button className='signup-button-bottom' type='submit'>{loading ? spinner : "Complete Sign up"}</button>}
-            </div>
           </form>}
         <div className='signup-bottom'>
           <div id="signup-progress-bar-container">
@@ -349,7 +350,9 @@ const SignUpForm = () => {
           </div>
           <div className='signup-button-container'>
             <div className="signup-button">
-
+              {signupStage === 1 && <button form='signup-form' className='signup-button-bottom' type='submit'>{loading ? spinner : "Next"}</button>}
+              {signupStage === 2 && <button form='signup-form' className='signup-button-bottom' type='submit'>{loading ? spinner : "Next"}</button>}
+              {signupStage === 3 && <button form='signup-form' className='signup-button-bottom' type='submit'>{loading ? spinner : "Complete Sign up"}</button>}
             </div>
           </div>
         </div>

@@ -11,7 +11,7 @@ const LandingPageNavbar = () => {
         return <Redirect to='/app' />;
     }
 
-    if (current_url === "/")   document.querySelector('meta[name="theme-color"]').setAttribute('content', `#002615`);
+    if (current_url === "/") document.querySelector('meta[name="theme-color"]').setAttribute('content', `#002615`);
     return (
         <div className="landing-page-container">
             <div className={`landing-page ${current_url === "/" ? "landing-page-green" : "landing-page-white"}`}>
@@ -26,18 +26,13 @@ const LandingPageNavbar = () => {
                         <NavLink to="/invest">
                             <li className="landing-page-navlink" id="landing-page-Invest-button">Invest</li>
                         </NavLink>
-                        <NavLink to="/crypto">
-                            <li className="landing-page-navlink" id="landing-page-Crypto-button">Crypto</li>
-                        </NavLink>
                         <NavLink to="/learn">
                             <li className="landing-page-navlink" id="landing-page-learn-button">Learn</li>
                         </NavLink>
-                        <NavLink to="/snacks">
-                            <li className="landing-page-navlink" id="landing-page-Snacks-button">Snacks</li>
-                        </NavLink>
                         <NavLink to="/cashcard">
-                            <li className="landing-page-navlink" id="landing-page-CashCard-button">CashCard</li>
+                            <li className="landing-page-navlink" id="landing-page-CashCard-button">RocketCard</li>
                         </NavLink>
+                        <a className="landing-page-navlink" href="https://github.com/kmaikat/robinhood-clone" target="_blank" rel="noopener noreferrer">Repository</a>
                     </ul>
                     <div className="landing-page-actions">
                         <NavLink to="/login" exact>

@@ -7,8 +7,8 @@ const storeData = async (ticker, unit) => {
     let fullUrl = `${url}?function=${func}&symbol=${ticker}&outputsize=full&apikey=${apikey}`
     if(unit === 'minutely') fullUrl += '&interval=5min'
 
-    const response = await fetch(fullUrl)
-    const allData = await response.json()
+    let response
+    let allData
 
     const series = {
         data: [],
@@ -16,34 +16,42 @@ const storeData = async (ticker, unit) => {
         date: new Date().toISOString().split('T')[0],
     }
 
-    const prices = Object.entries(allData[unit === 'daily' ? "Time Series (Daily)" : "Time Series (5min)"])
+    try{
+        response = await fetch(fullUrl)
+        allData = await response.json()
+        if('Error Message' in allData) throw new Error()
 
-    if(unit === 'daily')
-        for(let i = prices.length - 1; i >= 0; i--){
-            if(prices[i][1]["8. split coefficient"] * 1 !== 1) series.data = series.data.map(p => p / prices[i][1]["8. split coefficient"])
-            series.data.push(prices[i][1]["4. close"] * 1)
-            series.categories.push(prices[i][0])
-            // series.categories.push(labelFormatter(prices[i][0]))
-        }
-    else
-        for(let i = prices.length - 1; i >= 0; i--){
-            const [hour, minute] = prices[i][0].split(' ')[1].split(':')
-            const time = hour * 60 + minute * 1
+        const prices = Object.entries(allData[unit === 'daily' ? "Time Series (Daily)" : "Time Series (5min)"])
 
-            if(minute[1] === '0' && time >= 570 && time <= 960){
+        if(unit === 'daily')
+            for(let i = prices.length - 1; i >= 0; i--){
+                if(prices[i][1]["8. split coefficient"] * 1 !== 1) series.data = series.data.map(p => p / prices[i][1]["8. split coefficient"])
                 series.data.push(prices[i][1]["4. close"] * 1)
                 series.categories.push(prices[i][0])
                 // series.categories.push(labelFormatter(prices[i][0]))
             }
-        }
+        else
+            for(let i = prices.length - 1; i >= 0; i--){
+                const [hour, minute] = prices[i][0].split(' ')[1].split(':')
+                const time = hour * 60 + minute * 1
 
-    let result = JSON.parse(sessionStorage.getItem('data'))
+                if(minute[1] === '0' && time >= 570 && time <= 960){
+                    series.data.push(prices[i][1]["4. close"] * 1)
+                    series.categories.push(prices[i][0])
+                    // series.categories.push(labelFormatter(prices[i][0]))
+                }
+            }
+    }catch{
+        sessionStorage.setItem('data', JSON.stringify(series))
+    }finally{
+        let result = JSON.parse(sessionStorage.getItem('data'))
 
-    if(!result) result = {}
-    if(!result[ticker]) result[ticker] = {}
-    result[ticker][unit] = series
+        if(!result) result = {}
+        if(!result[ticker]) result[ticker] = {}
+        result[ticker][unit] = series
 
-    sessionStorage.setItem('data', JSON.stringify(result))
+        sessionStorage.setItem('data', JSON.stringify(result))
+    }
 }
 
 // const allPrices = async ticker => {
@@ -71,6 +79,7 @@ export const getMinutelyPrices = async (ticker, t) => {
     }
 
     if(t === '1W'){
+        if(!series.data.length) return res
         const latestDate = new Date(series.categories[series.categories.length - 1].split(' ')[0])
 
         let idx = -1
@@ -103,6 +112,7 @@ export const getMinutelyPrices = async (ticker, t) => {
 
 export const getDailyPrices = async (ticker, t) => {
     const series = await getData(ticker, 'daily')
+
     const res = {
         data: [],
         categories: []
@@ -170,8 +180,15 @@ export const getDailyPrices = async (ticker, t) => {
 }
 
 export const getOneDayPrices = async (ticker, miniSize = false) => {
-    const res = await fetch('https://yahoo-finance-api.vercel.app/' + ticker)
-    const jsonData = await res.json()
+    let res
+    let jsonData
+    try{
+        res = await fetch('https://yahoo-finance-api.vercel.app/' + ticker)
+        if(!res.ok) throw new Error()
+        jsonData = await res.json()
+    }catch{
+        return {data: [], categories: []}
+    }
     const data = jsonData.chart.result[0].indicators.quote[0].close
     const categories = jsonData.chart.result[0].timestamp
 
@@ -199,8 +216,9 @@ export const getOneDayPrices = async (ticker, miniSize = false) => {
 const getData = async (ticker, unit) => {
     const d = JSON.parse(sessionStorage.getItem('data'))
 
-    if(!d || !d[ticker] || !d[ticker][unit] || d[ticker][unit].date !== new Date().toISOString().split('T')[0])
+    if(!d || !d[ticker] || !d[ticker][unit] || d[ticker][unit].date !== new Date().toISOString().split('T')[0]){
         await storeData(ticker, unit)
+    }
 
     return JSON.parse(sessionStorage.getItem('data'))[ticker][unit]
 }
@@ -235,7 +253,7 @@ export const amountFormatter = value => {
         cnt++
     }
 
-    return `$${res}.${second}`
+    return `$${isNaN(res.replaceAll(',', '')) ? 0 : res}.${second || '00'}`
 }
 
 export const diffFormatter = (curr, start, isPositive) => {

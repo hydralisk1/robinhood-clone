@@ -17,7 +17,7 @@ function formatTransactionAmount(event) {
     if (event.target.value.split(".")[1]?.length > 2) dollar = transactionDollar.format(event.target.value.slice(0, -1));
     else if (event.target.value[event.target.value.length - 1] === ".") dollar = transactionDollar.format(event.target.value) + ".";
     else if (event.target.value[event.target.value.length - 1] === "0" && event.target.value[event.target.value.length - 2] === ".") dollar = transactionDollar.format(event.target.value) + ".0";
-    else dollar = transactionDollar.format(event.target.value);
+    else dollar = transactionDollar.format(Math.abs(event.target.value));
     return dollar;
 }
 
@@ -48,8 +48,8 @@ function Transactions() {
             const price = await grabLatestPrice(symbol);
             const response = await fetch('/api/stock/search/' + symbol);
             const data = await response.json();
-            const comany = data[0];
-            setCompanyName(comany.name);
+            const company = data[0];
+            setCompanyName(company.name);
             setSharePrice(price.data[price.data.length - 1]);
         })();
     }, [symbol]);
@@ -111,8 +111,21 @@ function Transactions() {
             setLoading(false);
             setSharePrice(latestPrice);
             setTimeout(() => {
+                const submission = document.querySelector("#transaction-submitting-order");
+                const animation = submission.animate(
+                    [
+                        { opacity: "100%" },
+                        { opacity: "0%" }
+                    ], {
+                    duration: 700,
+                    timingFunction: "ease-out",
+                    fill: "forwards"
+                });
+                setTransactionAmount("");
+                setErrors({});
                 setSubmittingOrder(false);
-            }, 2500);
+                setLoading(true);
+            }, 700);
         }, loadTimes[randomIndex]);
     }
 
@@ -155,12 +168,13 @@ function Transactions() {
                         <div className="transaction-form-data-container">
                             <label style={{ userSelect: "none" }}>Buy In</label>
                             <div ref={optionContainer} className={`transaction-shares-or-dollars-outer-container `} id={showSharesOrDollars ? "transaction-shares-or-dollars-outer-container" : ""}>
-                                <button onClick={() => {
+                                <button onClick={(e) => {
+                                    e.preventDefault();
                                     setShowSharesOrDollars(!showSharesOrDollars);
                                 }}
                                     id="transaction-shares-or-dollars-display">
                                     {sharesOrDollars === "dollars" ? "Dollars" : "Shares"}
-                                    <i className="fa-solid fa-up-down" />
+                                    <i className="fa-solid fa-sort"></i>
                                 </button>
                                 {showSharesOrDollars &&
                                     <div className={`transaction-shares-or-dollars-container ${showSharesOrDollars ? "transactions-shares-or-dollars-open" : ""}`}>
@@ -214,6 +228,7 @@ function Transactions() {
                                     if (event.target.value[0] === "$") {
                                         event.target.value = event.target.value.slice(1);
                                         event.target.value = event.target.value.split(",").join("");
+                                        event.target.value = Math.abs(event.target.value);
                                     }
                                     if (isNaN(event.target.value) === false) {
                                         // buy conditions
@@ -229,8 +244,8 @@ function Transactions() {
 
                                         if (buyOrSale === "buy" && sharesOrDollars === "shares") {
                                             if (Number(buyingPower / sharePrice) >= Number(event.target.value)) {
-                                                setTransactionAmount(event.target.value);
-                                                setEstQuantity(`$${usDollar.format(Number(event.target.value) * sharePrice)}`);
+                                                setTransactionAmount(Math.abs(event.target.value));
+                                                setEstQuantity(`$${usDollar.format(Math.abs(Number(event.target.value) * sharePrice))}`);
                                             } else {
                                                 setErrors({ amount: "Not enough funds." });
                                             }
@@ -248,8 +263,8 @@ function Transactions() {
 
                                         if (buyOrSale === "sell" && sharesOrDollars === "shares") {
                                             if (Number(ownedShares) >= Number(event.target.value)) {
-                                                setTransactionAmount(event.target.value);
-                                                setEstQuantity(usDollar.format(Number(event.target.value) * sharePrice));
+                                                setTransactionAmount(Math.abs(event.target.value));
+                                                setEstQuantity("$" + usDollar.format(Math.abs(Number(event.target.value) * sharePrice)));
                                             } else {
                                                 setErrors({ amount: "Not enough stock." });
                                             }
@@ -290,7 +305,7 @@ function Transactions() {
                             <p>{`Roughly $${(Number(ownedShares) * Number(sharePrice)).toString().split(".")[0]}${(Number(ownedShares) * Number(sharePrice)).toString().split(".")[1]?.slice(0, 2) ? "." + (Number(ownedShares) * Number(sharePrice)).toString().split(".")[1]?.slice(0, 2) : ""} of ${symbol} remaining`}</p>
                         </div>}
                     {submittingOrder &&
-                        <div id="transaction-submitting-order">
+                        <div id="transaction-submitting-order" >
                             {
                                 loading &&
                                 <div id="signup-spinner" />
@@ -298,9 +313,11 @@ function Transactions() {
                             {
                                 !loading &&
                                 <div className="transaction-submitted">
-                                    <i className="fa-solid fa-check-to-slot" />
-                                    <p>Order Successfully Submitted!</p>
-                                    <p>Filled at {`${sharePrice.toString().split(".")[0]}.${sharePrice.toString().split(".")[1] ? sharePrice.toString().split(".")[1]?.slice(0, 2) : ""}`} a share</p>
+                                    <i className="fa-regular fa-circle-check" style={buyOrSale === "buy" ? { color: " #00C805", fontWeight: 500 } : { color: "#FF6600", fontWeight: 500 }} />
+                                    <div className="transaction-submitted-text">
+                                        <p>Order Successfully Submitted!</p>
+                                        <p>Filled at <span style={buyOrSale === "buy" ? { color: " #00C805", fontWeight: 500 } : { color: "#FF6600", fontWeight: 500 }}>{`$${sharePrice.toString().split(".")[0]}.${sharePrice.toString().split(".")[1] ? sharePrice.toString().split(".")[1]?.slice(0, 2) : ""}`} </span>a share</p>
+                                    </div>
                                 </div>
                             }
                         </div>
