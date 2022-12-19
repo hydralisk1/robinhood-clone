@@ -125,9 +125,9 @@ const DrawChart = () => {
     }
 
     useEffect(() => {
-        if(isRealtime && term === '1D') realtimeId = setTimeout(async () => {
+        if(isRealtime && term === '1D') setRealtimeId(setTimeout(async () => {
             await getOneDayData()
-        }, 5000)
+        }, 5000))
     }, [isRealtime, allData])
 
     useEffect(() => {
