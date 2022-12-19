@@ -128,6 +128,8 @@ const DrawChart = () => {
         if(isRealtime && term === '1D') setRealtimeId(setTimeout(async () => {
             await getOneDayData()
         }, 5000))
+        
+        return () => {clearTimeout(realtimeId)}
     }, [isRealtime, allData])
 
     useEffect(() => {
@@ -138,8 +140,6 @@ const DrawChart = () => {
             clearTimeout(realtimeId)
             getData()
         }
-
-
     }, [term, symbol])
 
     return (
